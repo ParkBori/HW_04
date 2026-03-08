@@ -1,8 +1,8 @@
 ﻿#include <iostream>
 #include <vector>
 #include <string>
-
-
+#include <optional>
+#include <format>
 
 /*
 * 2026.3.28
@@ -30,8 +30,6 @@
 *   ISP (인터페이스 분리 원치) - 인터페이스 세분화
 *   DIP (의존 역전 원칙) - 고수준 모듈에서의 추상화하여 저수준에 의존 x 
 *       -> 전체적으로 인터페이스를 사용하고 있지 않은 강결합 상태이다.
-* 
-*   추가적으로 레시피가 "고유"하지 않을 수 있다
 *   
 */
 
@@ -55,6 +53,24 @@ public:
     PotionRecipe(const std::string& name, const std::vector<std::string>& ingredients)
         : potionName(name), ingredients(ingredients)
     {
+    }
+
+    void PrintRecipe() const
+    {
+        std::cout << "- 물약 이름: " << potionName << std::endl;
+        std::cout << "  > 필요 재료: ";
+
+        // 재료 목록을 순회하며 출력
+        for (size_t j = 0; j < ingredients.size(); ++j)
+        {
+            std::cout << ingredients[j];
+            // 마지막 재료가 아니면 쉼표로 구분
+            if (j < ingredients.size() - 1)
+            {
+                std::cout << ", ";
+            }
+        }
+        std::cout << std::endl;
     }
 };
 
@@ -81,36 +97,44 @@ public:
         }
 
         std::cout << "\n--- [ 전체 레시피 목록 ] ---" << std::endl;
-        for (size_t i = 0; i < recipes.size(); ++i)
+        for (const auto& recipe : recipes)
         {
-            std::cout << "- 물약 이름: " << recipes[i].potionName << std::endl;
-            std::cout << "  > 필요 재료: ";
-
-            // 재료 목록을 순회하며 출력
-            for (size_t j = 0; j < recipes[i].ingredients.size(); ++j)
-            {
-                std::cout << recipes[i].ingredients[j];
-                // 마지막 재료가 아니면 쉼표로 구분
-                if (j < recipes[i].ingredients.size() - 1) 
-                {
-                    std::cout << ", ";
-                }
-            }
-            std::cout << std::endl;
+            recipe.PrintRecipe();
         }
         std::cout << "---------------------------\n";
     }
 
-    const PotionRecipe& searchRecipeByName(const std::string& name)
+    std::optional<PotionRecipe> searchRecipeByName(const std::string& name)
     {
-        return *std::find_if(recipes.begin(), recipes.end(), [name](const PotionRecipe& Potion) {
+        auto iter = std::find_if(recipes.begin(), recipes.end(), [name](const PotionRecipe& Potion) {
             return Potion.potionName == name;
             });
+
+        // 레시피가 없는 경우
+        if (iter == recipes.end())
+        {
+            return std::nullopt;
+        }
+        
+        return *iter;
     }
 
     std::vector<PotionRecipe> searchRecipeByIngredient(const std::string& ingredient)
     {
-        //std::find
+        std::vector<PotionRecipe> findRecipes;
+        for (const auto& recipe : recipes)
+        {
+            for (const auto& recipeIngredient : recipe.ingredients)
+            {
+                if (ingredient == recipeIngredient)
+                {
+                    findRecipes.push_back(recipe);
+                    break;
+                }
+            }
+        }
+
+        return findRecipes;
     }
 };
 
@@ -123,7 +147,9 @@ int main()
         std::cout << "⚗️ 연금술 공방 관리 시스템" << std::endl;
         std::cout << "1. 레시피 추가" << std::endl;
         std::cout << "2. 모든 레시피 출력" << std::endl;
-        std::cout << "3. 종료" << std::endl;
+        std::cout << "3. 특정 이름 레시피 찾기" << std::endl;
+        std::cout << "4. 특정 재료 포함 레시피 찾기" << std::endl;
+        std::cout << "5. 종료" << std::endl;
         std::cout << "선택: ";
 
         int choice;
@@ -176,7 +202,44 @@ int main()
             myWorkshop.displayAllRecipes();
 
         }
-        else if (choice == 3) 
+        else if (choice == 3)
+        {
+            std::string recipeName;
+            std::cin.ignore(10000, '\n');
+            std::cout << "레시피 찾기. 레시피 이름을 입력하세요 : ";
+            std::getline(std::cin, recipeName);
+
+            std::optional<PotionRecipe> FindedRecipe = myWorkshop.searchRecipeByName(recipeName);
+            if (FindedRecipe.has_value())
+            {
+                FindedRecipe->PrintRecipe();
+            }
+            else
+            {
+                std::cout << "레시피가 존재하지 않습니다." << std::endl;
+            }
+        }
+        else if (choice == 4)
+        {
+            std::string ingredient;
+            std::cin.ignore(10000, '\n');
+            std::cout << "재료 포함된 레시피 찾기. 재료를 입력하세요 : " << std::endl;
+            std::getline(std::cin, ingredient);
+
+            const auto& FindedRecipes = myWorkshop.searchRecipeByIngredient(ingredient);
+            if (FindedRecipes.empty())
+            {
+                std::cout << "해당 재료가 포함된 레시피가 존재하지 않습니다." << std::endl;
+            }
+            else
+            {
+                for (const auto& Recip : FindedRecipes)
+                {
+                    Recip.PrintRecipe();
+                }
+            }
+        }
+        else if (choice == 5) 
         {
             std::cout << "공방 문을 닫습니다..." << std::endl;
             break;
