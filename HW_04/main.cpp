@@ -5,6 +5,7 @@
 
 #include <functional>
 
+
 /*
 * 2026.3.22
 * [작성자] : 박재현 
@@ -47,6 +48,7 @@ public:
 public:
     std::string potionName;
     std::vector<std::string> ingredients; // 단일 재료에서 재료 '목록'으로 변경
+
 };
 
 class RecipeManager
@@ -183,22 +185,23 @@ public:
         }
 
         std::cout << "\n--- [ 전체 레시피 목록 ] ---" << std::endl;
-        for (size_t i = 0; i < recipes.size(); ++i)
+        for (const auto& recipe : recipes)
         {
-            std::cout << "- 물약 이름: " << recipes[i].potionName << std::endl;
+            std::cout << "- 물약 이름: " << recipe.potionName << std::endl;
             std::cout << "  > 필요 재료: ";
 
             // 재료 목록을 순회하며 출력
-            for (size_t j = 0; j < recipes[i].ingredients.size(); ++j)
+            for (size_t j = 0; j < recipe.ingredients.size(); ++j)
             {
-                std::cout << recipes[i].ingredients[j];
+                std::cout << recipes[j].ingredients[j];
                 // 마지막 재료가 아니면 쉼표로 구분
-                if (j < recipes[i].ingredients.size() - 1)
+                if (j < recipes[j].ingredients.size() - 1)
                 {
                     std::cout << ", ";
                 }
             }
             std::cout << std::endl;
+
         }
         std::cout << "---------------------------\n";
     }
@@ -206,6 +209,7 @@ public:
     int GetStockByName(const std::string& Name)
     {
         return myStockManager.GetStock(Name);
+
     }
 
     bool DispensePotionByName(const std::string& potionName)
@@ -248,7 +252,6 @@ int main()
 {
     AlchemyWorkshop workshop;
 
-
     workshop.AddRecipe("Healing Potion", { "Herb", "Water" });
     workshop.AddRecipe("Mana Potion", { "Magic Water", "Crystal" });
     workshop.AddRecipe("Stamina Potion", { "Herb", "Berry" });
@@ -281,6 +284,7 @@ int main()
     workshop.ReturnPotionByName("Healing Potion");
     workshop.ReturnPotionByName("Healing Potion");
     workshop.ReturnPotionByName("Healing Potion"); // 이미 3이면 더 올라가면 안 됨
+
 
     std::cout << "반환 후 재고(최대 3 유지): "
         << workshop.GetStockByName("Healing Potion") << "\n";
