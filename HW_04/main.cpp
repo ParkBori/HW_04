@@ -90,7 +90,6 @@ public:
                 }
             }
         }
-
         return exactPotionRecipes;
     }
 
@@ -110,7 +109,6 @@ public:
 class StockManager
 {
 public:
-
     bool DispensePotion(const std::string& potionName)
     {
         if (potionStock.end() == potionStock.find(potionName))
